@@ -1,0 +1,252 @@
+**Assignment 2 Report**
+
+AndrewID: yueli3
+
+(##) About this template
+
+* If you choose to implement a task, please **CLEARLY** indicate that you implemented it. You can do this by adding `<font size="10"> IMPLEMENTED </font>` or something similar to the task.
+
+* You can view your writeup by opening it in a browser - right click this file and open with your browser of choice.
+
+* Replace reference images with your own screenshots or renders when applicable.
+
+* If you didn't handle any edge cases or you don't think are any, please state that there isn't any.
+
+* Include descriptions of any encountered problems and the time you spent on each task.
+
+(##) A2L1 CHECKPOINT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+**1) case 1: e->on_boundary() is true, then return nullopt;**
+
+**2) case 2: if e is not a boundary edge, h->face and h->twin->face should be co-plane(expect for both face are triangle). If not, return nullopt;**
+
+**3) case 3: general valid operation case.**
+
+Your completion will be graded based on the reference `test.a2.l1.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2L2 CHECKPOINT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+**1) case1: e->on_boundary() is ture, i.e. edge is a boundary edge;**
+
+**2) case2: e->on_boundary() is false, i.e. edge is not a boundary edge;**
+
+Your completion will be graded based on the reference `test.a2.l2.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2L3 CHECKPOINT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+**1) case1: the mesh is a simple triangle, return nullopt;**
+
+**2) case2: the mesh is a three pyramid, return nullopt (prevent converting from 3D mesh to 2D mesh);**
+
+**3) case3: if edge e is the only edge separating two faces, collapsed edge operation will destory connectivity;**
+
+**3.1) case3.1: if e->h->face and e->h->twin->face are triangle, the conectivity of these two triangle should be 3, otherwise return nullopt;**
+
+**4) case4: general valid collapse operation case;**
+
+Your completion will be graded based on the reference `test.a2.l3.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2L4 CHECKPOINT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+**1) case1: the target face is a boundary face, return nullopt;**
+
+**2) case2: the face is not a boundary face;**
+
+Your completion will be graded based on the reference `test.a2.l4.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2G1 FINAL
+
+You do not need any screenshots for this task. 
+
+Your completion will be graded based on the reference `test.a2.g1.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2G2 FINAL
+
+You do not need any screenshots for this task. 
+
+Your completion will be graded based on the reference `test.a2.g2.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2G3 FINAL
+
+You do not need any screenshots for this task. 
+
+Your completion will be graded based on the reference `test.a2.g3.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2GO1 CHOICE FINAL
+
+**Global Operation Completed: A2GO2**
+
+You do not need any screenshots for this task. 
+
+Your completion will be graded based on the reference file for the operation of choice and 
+checking that the operation works in the GUI.
+
+(##) CREATED MODEL FINAL
+
+Image of model in the GUI:
+<div class="twentytwenty-container">
+    <img src="A2-writeup/student/my_tank.png" alt="my_tank">
+</div>
+Explanation of what it is and how you made it:
+
+**It is a tank model, I create 3 mesh instances and take some local and global operations: move, scale, catmull, triangulate, remesh. 
+Then combine all this components together.**
+
+Any free model sources you need to credit?
+
+**src="A2-writeup/student/tank1.js3d"**
+
+(##) A2LX1 EXTRA CREDIT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+
+**1) case1: the target vertice is not boundary vertice;**
+
+Your completion will be graded based on the reference `test.a2.lx1.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2LX2 EXTRA CREDIT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+
+Your completion will be graded based on the reference `test.a2.lx2.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2LX3 EXTRA CREDIT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+
+Your completion will be graded based on the reference `test.a2.lx3.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2LX4 EXTRA CREDIT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+
+**1) case1: the target face is a boundary face, return nullopt;**
+
+**2) case2: the face is not a boundary face;**
+
+Your completion will be graded based on the reference `test.a2.lx4.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2LX5 EXTRA CREDIT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+
+Your completion will be graded based on the reference `test.a2.lx5.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2LX6 EXTRA CREDIT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+
+Your completion will be graded based on the reference `test.a2.lx6.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2LX7 EXTRA CREDIT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+
+Your completion will be graded based on the reference `test.a2.lx7.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2LX8 EXTRA CREDIT
+
+You do not need any screenshots for this task. 
+
+**What edge cases did you handle?**
+
+*  Answer here:
+
+Your completion will be graded based on the reference `test.a2.lx8.cpp` file and 
+checking that the operation works in the GUI.
+
+(##) A2GO2 CHOICE EXTRA CREDIT
+
+**Global Operation Completed: **
+
+You do not need any screenshots for this task. 
+
+Your completion will be graded based on the reference file for the operation of choice and 
+checking that the operation works in the GUI.
+
+(##) A2GO3 CHOICE EXTRA CREDIT
+
+**Global Operation Completed: **
+
+You do not need any screenshots for this task. 
+
+Your completion will be graded based on the reference file for the operation of choice and 
+checking that the operation works in the GUI.
+
+(##) Feedback
+
+Use this section to provide feedback about the assignment.
+
+<!--- Markdeep & image comparison library - probably no need to change anything below -->
+<style class="fallback">body{visibility:hidden;white-space:pre;font-family:monospace}</style>
+<script src="resources/markdeep.min.js"></script><script>window.alreadyProcessedMarkdeep||(document.body.style.visibility="visible")</script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/1.11.0/jquery.min.js"></script>
+<script src="resources/jquery.event.move.js"></script>
+<script src="resources/jquery.twentytwenty.js"></script>
+<link href="resources/offcanvas.css" rel="stylesheet">
+<link href="resources/twentytwenty.css" rel="stylesheet" type="text/css" />
+<script>
+$(window).load(function(){$(".twentytwenty-container").twentytwenty({default_offset_pct: 0.5});});
+</script>
