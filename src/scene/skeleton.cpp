@@ -49,7 +49,6 @@ std::vector<Mat4> Skeleton::bind_pose() const
 	if (!bones.size())
 		return {};
 	// NOTE: bones is guaranteed to be ordered such that parents appear before child bones.
-	int index = 0;
 	for (auto const &bone : bones)
 	{
 		//(void)bone; //avoid complaints about unused bone
@@ -59,9 +58,8 @@ std::vector<Mat4> Skeleton::bind_pose() const
 			bind.emplace_back(Mat4::translate(base + base_offset));
 			continue;
 		}
-		Mat4 bind_pose = bind[index] * Mat4::translate(bones[index].extent);
+		Mat4 bind_pose = bind[bone.parent] * Mat4::translate(bones[bone.parent].extent);
 		bind.emplace_back(bind_pose);
-		index++;
 	}
 
 	assert(bind.size() == bones.size()); // should have a transform for every bone.
@@ -79,7 +77,6 @@ std::vector<Mat4> Skeleton::current_pose() const
 	if (!bones.size())
 		return {};
 	// You'll probably want to write a loop similar to bind_pose().
-	int index = 0;
 	for (auto const &bone : bones)
 	{
 		// Useful functions:
@@ -92,13 +89,11 @@ std::vector<Mat4> Skeleton::current_pose() const
 		if (bone.parent == -1U)
 		{
 			bind.emplace_back(Mat4::translate(base + base_offset) * R_zyx);
-			index++;
 			continue;
 		}
-		Mat4 T = Mat4::translate(bones[index - 1].extent);
-		bind.emplace_back(bind[index - 1] * T * R_zyx);
+		Mat4 T = Mat4::translate(bones[bone.parent].extent);
+		bind.emplace_back(bind[bone.parent] * T * R_zyx);
 		// std::cout << bind.back() << "\n";
-		index++;
 	}
 	assert(bind.size() == bones.size()); // should have a transform for every bone.
 	return bind;
