@@ -22,7 +22,7 @@ T Spline<T>::at(float time) const
 		return it->second;
 	}
 
-	std::map<float, T>::const_iterator first = knots.begin();
+	typename std::map<float, T>::const_iterator first = knots.begin();
 	auto last = --knots.end();
 	if (time <= first->first)
 		return first->second;
