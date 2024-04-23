@@ -3,24 +3,33 @@
 #include "scene/skeleton.h"
 
 std::optional<std::pair<std::string, size_t>> compareVerts(std::vector<Indexed_Mesh::Vert> expected,
-                                                           std::vector<Indexed_Mesh::Vert> actual) {
-    if (expected.size() != actual.size()) {
-		return std::pair{"expected.size() != actual.size()", 0};
-	}
+                                                           std::vector<Indexed_Mesh::Vert> actual)
+{
+    if (expected.size() != actual.size())
+    {
+        return std::pair{"expected.size() != actual.size()", 0};
+    }
 
-	for (int32_t i = 0; i < (int32_t)expected.size(); i++) {
-		if (Test::differs(expected[i].pos, actual[i].pos)) {
-			return std::pair{"Vertex positions differ", i};
-		}
-        if(Test::differs(expected[i].norm, actual[i].norm)) {
-			return std::pair{"Vertex normals differ", i};
+    for (int32_t i = 0; i < (int32_t)expected.size(); i++)
+    {
+        // info("\n %d", i);
+        if (Test::differs(expected[i].pos, actual[i].pos))
+        {
+            // info("vertex pos check:");
+            return std::pair{"Vertex positions differ", i};
         }
-	}
+        if (Test::differs(expected[i].norm, actual[i].norm))
+        {
+            // info("\nvertex normals check:");
+            return std::pair{"Vertex normals differ", i};
+        }
+    }
 
-	return std::nullopt;
+    return std::nullopt;
 }
 
-Test test_a4_task3_skin_cylinder_root("a4.task3.skin.cylinder.root", []() {
+Test test_a4_task3_skin_cylinder_root("a4.task3.skin.cylinder.root", []()
+                                      {
 	Indexed_Mesh capsule = Util::cyl_mesh(0.5f, 4);
     Halfedge_Mesh mesh = Halfedge_Mesh::from_indexed_mesh(capsule);
 	Skeleton skeleton;
@@ -186,5 +195,4 @@ Test test_a4_task3_skin_cylinder_root("a4.task3.skin.cylinder.root", []() {
 	if (auto diff = compareVerts(expected_vertices, actual.vertices())) {
 		throw Test::error(test_case + "Test failed: " + diff.value().first + " at vertex " +
 		                  std::to_string(diff.value().second));
-	}
-});
+	} });

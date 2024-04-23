@@ -9,42 +9,52 @@
 #include "scene/skeleton.h"
 
 #include <map>
+#include <iostream>
 #include <sstream>
 #include <unordered_set>
 
 bool Test::run_generators = false;
 
-namespace {
-std::map<std::string, std::function<void()>>& get_tests() {
-	static std::map<std::string, std::function<void()>> map;
-	return map;
-}
-
-std::string to_lower(const std::string& str) {
-	std::string result;
-	for (auto c : str) {
-		result += static_cast<decltype(c)>(std::tolower(c));
+namespace
+{
+	std::map<std::string, std::function<void()>> &get_tests()
+	{
+		static std::map<std::string, std::function<void()>> map;
+		return map;
 	}
-	return result;
-}
+
+	std::string to_lower(const std::string &str)
+	{
+		std::string result;
+		for (auto c : str)
+		{
+			result += static_cast<decltype(c)>(std::tolower(c));
+		}
+		return result;
+	}
 } // namespace
 
-Test::Test(const std::string& name, const std::function<void()>& test) {
+Test::Test(const std::string &name, const std::function<void()> &test)
+{
 	auto ret = get_tests().emplace(to_lower(name), test);
-	if (!ret.second) {
+	if (!ret.second)
+	{
 		die("Two tests named '%s'.", name.c_str());
 	}
 }
 
-bool Test::run_tests(const std::string& prefix_) {
+bool Test::run_tests(const std::string &prefix_)
+{
 
 	std::string prefix = to_lower(prefix_);
-	auto& tests = get_tests();
+	auto &tests = get_tests();
 
 	// count the number of tests to run:
 	uint32_t to_run = 0;
-	for (auto& test : tests) {
-		if (test.first.find(prefix) != std::string::npos) {
+	for (auto &test : tests)
+	{
+		if (test.first.find(prefix) != std::string::npos)
+		{
 			++to_run;
 		}
 	}
@@ -55,31 +65,41 @@ bool Test::run_tests(const std::string& prefix_) {
 	uint32_t ignored = 0;
 
 	log("\nRunning %d tests including '%s':\n\n", to_run, prefix.c_str());
-	for (auto& test : tests) {
-		if (test.first.find(prefix) != std::string::npos) {
+	for (auto &test : tests)
+	{
+		if (test.first.find(prefix) != std::string::npos)
+		{
 			log("\033[0;37m[%d/%d] \033[0;1m%s\033[0m...", passed + failed + 1, to_run,
-			    test.first.c_str());
-			try {
+				test.first.c_str());
+			try
+			{
 				test.second();
 				log(" \033[32mPASSED\033[0m\n");
 				passed += 1;
-			} catch (Test::error& e) {
+			}
+			catch (Test::error &e)
+			{
 				log(" \033[31;1mFAILED\n    %s\033[0m\n", e.what());
 				failed += 1;
-			} catch (Test::ignored& e) {
+			}
+			catch (Test::ignored &e)
+			{
 				log(" \033[33;1mIGNORED\n    %s\033[0m\n", e.what());
 				ignored += 1;
 			}
 		}
 	}
 	log("\n");
-	if (passed || !failed) {
+	if (passed || !failed)
+	{
 		log("\033[32mPASSED %d tests.\033[0m\n", passed);
 	}
-	if (failed) {
+	if (failed)
+	{
 		log("\033[31;1mFAILED %d tests.\033[0m\n", failed);
 	}
-	if (ignored) {
+	if (ignored)
+	{
 		log("\033[33;1mIGNORED %d tests.\033[0m\n", ignored);
 	}
 	log("\n");
@@ -87,41 +107,53 @@ bool Test::run_tests(const std::string& prefix_) {
 	return failed == 0;
 }
 
-std::string Test::mesh_to_string(const Halfedge_Mesh& mesh) {
+std::string Test::mesh_to_string(const Halfedge_Mesh &mesh)
+{
 
 	std::stringstream ss;
 	std::unordered_map<uint32_t, uint32_t> vertex_id_to_idx;
 
 	uint32_t i = 0;
-	for (auto v = mesh.vertices.begin(); v != mesh.vertices.end(); ++v) {
+	for (auto v = mesh.vertices.begin(); v != mesh.vertices.end(); ++v)
+	{
 		vertex_id_to_idx[v->id] = i++;
 	}
 
 	ss << "Halfedge_Mesh mesh = Halfedge_Mesh::from_indexed_faces({";
-	for (auto v = mesh.vertices.begin(); v != mesh.vertices.end(); ++v) {
-		auto format = [](float val) -> std::string {
+	for (auto v = mesh.vertices.begin(); v != mesh.vertices.end(); ++v)
+	{
+		auto format = [](float val) -> std::string
+		{
 			std::string ret = std::to_string(val);
-			if (ret.find('.') == std::string::npos) ret = ret + ".0f";
-			else ret += "f";
+			if (ret.find('.') == std::string::npos)
+				ret = ret + ".0f";
+			else
+				ret += "f";
 			return ret;
 		};
 		ss << "Vec3{" << format(v->position.x) << "," << format(v->position.y) << "," << format(v->position.z) << "}";
-		if (v != std::prev(mesh.vertices.end())) {
+		if (v != std::prev(mesh.vertices.end()))
+		{
 			ss << ", ";
 		}
 	}
 	ss << "}, {";
 	bool first = true;
-	for (auto f = mesh.faces.begin(); f != mesh.faces.end(); ++f) {
-		if (f->boundary) continue;
-		if (!first) ss << ",";
+	for (auto f = mesh.faces.begin(); f != mesh.faces.end(); ++f)
+	{
+		if (f->boundary)
+			continue;
+		if (!first)
+			ss << ",";
 		first = false;
 		ss << "{";
 		auto h = f->halfedge;
-		do {
+		do
+		{
 			ss << vertex_id_to_idx[h->vertex->id];
 			h = h->next;
-			if (h != f->halfedge) {
+			if (h != f->halfedge)
+			{
 				ss << ", ";
 			}
 		} while (h != f->halfedge);
@@ -132,8 +164,9 @@ std::string Test::mesh_to_string(const Halfedge_Mesh& mesh) {
 	return ss.str();
 }
 
-template<typename T>
-static std::pair<float, float> time_op(T& _small, T& _large, const std::function<void(T&)>& op) {
+template <typename T>
+static std::pair<float, float> time_op(T &_small, T &_large, const std::function<void(T &)> &op)
+{
 
 	constexpr uint32_t rounds = 5;
 
@@ -141,12 +174,14 @@ static std::pair<float, float> time_op(T& _small, T& _large, const std::function
 		  large_time = std::numeric_limits<float>::infinity();
 
 	std::vector<T> smalls, larges;
-	for (uint32_t round = 0; round < rounds; round++) {
+	for (uint32_t round = 0; round < rounds; round++)
+	{
 		smalls.push_back(_small.copy());
 		larges.push_back(_large.copy());
 	}
 
-	for (uint32_t round = 0; round < rounds; round++) {
+	for (uint32_t round = 0; round < rounds; round++)
+	{
 		{
 			Timer large_t;
 			op(larges[round]);
@@ -162,20 +197,23 @@ static std::pair<float, float> time_op(T& _small, T& _large, const std::function
 	return std::make_pair(small_time, large_time);
 }
 
-void Test::check_constant_time(std::function<void(Halfedge_Mesh&)> op) {
+void Test::check_constant_time(std::function<void(Halfedge_Mesh &)> op)
+{
 	static Halfedge_Mesh _small = Halfedge_Mesh::from_indexed_mesh(Util::closed_sphere_mesh(1.0f, 0));
 	static Halfedge_Mesh _large = Halfedge_Mesh::from_indexed_mesh(Util::closed_sphere_mesh(1.0f, 4));
 
 	auto [small_time, large_time] = time_op(_small, _large, op);
 
 	constexpr float factor = 10.0f;
-	if (factor * small_time < large_time) {
+	if (factor * small_time < large_time)
+	{
 		throw Test::error("Operation not constant time. Small mesh: " + std::to_string(small_time) +
-		                  "ms vs. Large mesh: " + std::to_string(large_time) + "ms.");
+						  "ms vs. Large mesh: " + std::to_string(large_time) + "ms.");
 	}
 }
 
-void Test::check_linear_time(std::function<void(Halfedge_Mesh&)> op) {
+void Test::check_linear_time(std::function<void(Halfedge_Mesh &)> op)
+{
 	static Halfedge_Mesh _small = Halfedge_Mesh::from_indexed_mesh(Util::closed_sphere_mesh(1.0f, 1));
 	static Halfedge_Mesh _large = Halfedge_Mesh::from_indexed_mesh(Util::closed_sphere_mesh(1.0f, 4));
 
@@ -187,13 +225,15 @@ void Test::check_linear_time(std::function<void(Halfedge_Mesh&)> op) {
 		static_cast<float>(large_total_elements) / static_cast<float>(small_total_elements);
 
 	constexpr float factor = 2.0f;
-	if (factor * ratio * small_time < large_time) {
+	if (factor * ratio * small_time < large_time)
+	{
 		throw Test::error("Operation not linear time. Small mesh: " + std::to_string(small_time) +
-		                  "ms vs. Large mesh: " + std::to_string(large_time) + "ms.");
+						  "ms vs. Large mesh: " + std::to_string(large_time) + "ms.");
 	}
 }
 
-void Test::check_loglinear_time(std::function<void(Indexed_Mesh&)> op) {
+void Test::check_loglinear_time(std::function<void(Indexed_Mesh &)> op)
+{
 	static Indexed_Mesh _small = Util::closed_sphere_mesh(1.0f, 1);
 	static Indexed_Mesh _large = Util::closed_sphere_mesh(1.0f, 4);
 
@@ -205,14 +245,16 @@ void Test::check_loglinear_time(std::function<void(Indexed_Mesh&)> op) {
 	float ratio = (large * std::log2(large)) / (small * std::log2(small));
 
 	constexpr float factor = 2.0f;
-	if (factor * ratio * small_time < large_time) {
+	if (factor * ratio * small_time < large_time)
+	{
 		throw Test::error(
 			"Operation not log-linear time. Small mesh: " + std::to_string(small_time) +
 			"ms vs. Large mesh: " + std::to_string(large_time) + "ms.");
 	}
 }
 
-void Test::check_log_time(std::function<void(PT::Tri_Mesh&)> op) {
+void Test::check_log_time(std::function<void(PT::Tri_Mesh &)> op)
+{
 	static PT::Tri_Mesh _small = PT::Tri_Mesh(Util::closed_sphere_mesh(1.0f, 1), true);
 	static PT::Tri_Mesh _large = PT::Tri_Mesh(Util::closed_sphere_mesh(1.0f, 4), true);
 
@@ -224,41 +266,50 @@ void Test::check_log_time(std::function<void(PT::Tri_Mesh&)> op) {
 	float ratio = std::log2(large) / std::log2(small);
 
 	constexpr float factor = 5.0f;
-	if (factor * ratio * small_time < large_time) {
+	if (factor * ratio * small_time < large_time)
+	{
 		throw Test::error(
 			"Operation not log time. Small mesh: " + std::to_string(small_time) +
 			"ms vs. Large mesh: " + std::to_string(large_time) + "ms.");
 	}
 }
 
-double Test::total_squared_error(const std::vector<double>& a, const std::vector<double>& b) {
+double Test::total_squared_error(const std::vector<double> &a, const std::vector<double> &b)
+{
 	assert(a.size() == b.size());
 	double error = 0.0;
-	for (uint32_t i = 0; i < a.size(); ++i) {
-		if (a[i] == 0.0) continue;
+	for (uint32_t i = 0; i < a.size(); ++i)
+	{
+		if (a[i] == 0.0)
+			continue;
 		double e = a[i] - b[i];
 		error += e * e / a[i];
 	}
 	return error;
 }
 
-double Test::total_squared_error(Spectrum a, Spectrum b) {
+double Test::total_squared_error(Spectrum a, Spectrum b)
+{
 	double error = 0.0;
-	for (uint32_t i = 0; i < 3; ++i) {
-		if (a[i] == 0.0) continue;
+	for (uint32_t i = 0; i < 3; ++i)
+	{
+		if (a[i] == 0.0)
+			continue;
 		double e = a[i] - b[i];
 		error += e * e / a[i];
 	}
 	return error;
 }
 
-double Test::print_empirical_threshold(const std::vector<double>& ref,
-                                       const std::function<std::vector<double>()>& histogram) {
+double Test::print_empirical_threshold(const std::vector<double> &ref,
+									   const std::function<std::vector<double>()> &histogram)
+{
 
 	constexpr uint32_t runs = 10000;
 
 	std::vector<double> errors;
-	for (uint32_t n = 0; n < runs; n++) {
+	for (uint32_t n = 0; n < runs; n++)
+	{
 		auto hist = histogram();
 		errors.push_back(Test::total_squared_error(hist, ref));
 	}
@@ -266,114 +317,150 @@ double Test::print_empirical_threshold(const std::vector<double>& ref,
 	std::sort(errors.begin(), errors.end(), std::greater<double>());
 
 	log("\n\t0.1%% of runs had total squared error greater than: " +
-	    std::to_string(errors[runs / 1000]) + "\n\t");
+		std::to_string(errors[runs / 1000]) + "\n\t");
 
 	return errors[runs / 1000];
 }
 
-bool Test::differs(float a, float b) {
-	if (std::isnan(a) && std::isnan(b)) return false;
-	if (std::isnan(a) || std::isnan(b)) return true;
-	return std::abs(a-b) > differs_eps;
+bool Test::differs(float a, float b)
+{
+	if (std::isnan(a) && std::isnan(b))
+		return false;
+	if (std::isnan(a) || std::isnan(b))
+		return true;
+	return std::abs(a - b) > differs_eps;
 }
 
-bool Test::differs(Vec2 a, Vec2 b) {
+bool Test::differs(Vec2 a, Vec2 b)
+{
 	return differs(a.x, b.x) || differs(a.y, b.y);
 }
 
-bool Test::differs(Vec3 a, Vec3 b) {
+bool Test::differs(Vec3 a, Vec3 b)
+{
+	// std::cout << "\n"
+	// 		  << a << "; " << b;
 	return differs(a.x, b.x) || differs(a.y, b.y) || differs(a.z, b.z);
 }
 
-bool Test::differs(Vec4 a, Vec4 b) {
+bool Test::differs(Vec4 a, Vec4 b)
+{
 	return differs(a.x, b.x) || differs(a.y, b.y) || differs(a.z, b.z) || differs(a.w, b.w);
 }
 
-bool Test::differs(Spectrum a, Spectrum b) {
+bool Test::differs(Spectrum a, Spectrum b)
+{
 	return differs(a.to_vec(), b.to_vec());
 }
 
-bool Test::differs(std::vector<Vec3> a, std::vector<Vec3> b) {
-	if (a.size() != b.size()) {
+bool Test::differs(std::vector<Vec3> a, std::vector<Vec3> b)
+{
+	if (a.size() != b.size())
+	{
 		return true;
 	}
-	for (size_t i = 0; i < a.size(); i++) {
-		if (differs(a[i], b[i])) {
+	for (size_t i = 0; i < a.size(); i++)
+	{
+		if (differs(a[i], b[i]))
+		{
 			return true;
 		}
 	}
 	return false;
 }
 
-bool Test::differs(Mat4 a, Mat4 b) {
-	for (int i = 0; i < 4; i++) {
-		if (differs(a[i], b[i])) {
+bool Test::differs(Mat4 a, Mat4 b)
+{
+	for (int i = 0; i < 4; i++)
+	{
+		if (differs(a[i], b[i]))
+		{
 			return true;
 		}
 	}
 	return false;
 }
 
-bool Test::differs(std::vector<Mat4> a, std::vector<Mat4> b) {
-	if (a.size() != b.size()) {
+bool Test::differs(std::vector<Mat4> a, std::vector<Mat4> b)
+{
+	if (a.size() != b.size())
+	{
 		return true;
 	}
-	for (size_t i = 0; i < a.size(); i++) {
-		if (differs(a[i], b[i])) {
+	for (size_t i = 0; i < a.size(); i++)
+	{
+		if (differs(a[i], b[i]))
+		{
 			return true;
 		}
 	}
 	return false;
 }
 
-bool Test::differs(std::vector<int> a, std::vector<int> b) {
-	if (a.size() != b.size()) {
+bool Test::differs(std::vector<int> a, std::vector<int> b)
+{
+	if (a.size() != b.size())
+	{
 		return true;
 	}
-	for (size_t i = 0; i < a.size(); i++) {
-		if (a[i] != b[i]) {
+	for (size_t i = 0; i < a.size(); i++)
+	{
+		if (a[i] != b[i])
+		{
 			return true;
 		}
 	}
 	return false;
 }
 
-template< >
-std::optional<std::string> Test::differs< Ray >(Ray const &a, Ray const &b) {
-	if (differs(a.point, b.point)) {
+template <>
+std::optional<std::string> Test::differs<Ray>(Ray const &a, Ray const &b)
+{
+	if (differs(a.point, b.point))
+	{
 		return "Origins do not match!";
 	}
-	if (differs(a.dir, b.dir)) {
+	if (differs(a.dir, b.dir))
+	{
 		return "Directions do not match!";
 	}
-	if (a.depth != b.depth) {
+	if (a.depth != b.depth)
+	{
 		return "Depths do not match!";
 	}
 
 	return std::nullopt;
 }
 
-template< >
-std::optional<std::string> Test::differs< PT::Trace >(PT::Trace const &a, PT::Trace const &b) {
-	if (a.hit != b.hit) {
+template <>
+std::optional<std::string> Test::differs<PT::Trace>(PT::Trace const &a, PT::Trace const &b)
+{
+	if (a.hit != b.hit)
+	{
 		return "Hit booleans do not match!";
 	}
 
 	// check other values if there was a hit
-	if (a.hit) {
-		if (differs(a.origin, b.origin)) {
+	if (a.hit)
+	{
+		if (differs(a.origin, b.origin))
+		{
 			return "Hit origins do not match!";
 		}
-		if (std::abs(a.distance - b.distance) > EPS_F) {
+		if (std::abs(a.distance - b.distance) > EPS_F)
+		{
 			return "Hit distances do not match!";
 		}
-		if (differs(a.position, b.position)) {
+		if (differs(a.position, b.position))
+		{
 			return "Hit positions do not match!";
 		}
-		if (differs(a.normal, b.normal)) {
+		if (differs(a.normal, b.normal))
+		{
 			return "Hit normals do not match!";
 		}
-		if (differs(a.uv, b.uv)) {
+		if (differs(a.uv, b.uv))
+		{
 			return "Hit UVs do not match!";
 		}
 	}
@@ -381,56 +468,71 @@ std::optional<std::string> Test::differs< PT::Trace >(PT::Trace const &a, PT::Tr
 	return std::nullopt;
 }
 
-template< >
-std::optional<std::string> Test::differs< Skeleton::Bone >(Skeleton::Bone const &a, Skeleton::Bone const &b) {
+template <>
+std::optional<std::string> Test::differs<Skeleton::Bone>(Skeleton::Bone const &a, Skeleton::Bone const &b)
+{
 
-	if (differs(a.extent, b.extent)) {
+	if (differs(a.extent, b.extent))
+	{
 		return "Bone extents do not match!";
 	}
-	if (differs(a.roll, b.roll)) {
+	if (differs(a.roll, b.roll))
+	{
 		return "Bone rolls do not match!";
 	}
-	if (differs(a.radius, b.radius)) {
+	if (differs(a.radius, b.radius))
+	{
 		return "Bone radii do not match!";
 	}
-	if (differs(a.pose, b.pose)) {
+	if (differs(a.pose, b.pose))
+	{
 		return "Bone poses do not match!";
 	}
 	return std::nullopt;
 }
 
-struct Quantized_Vertices {
+struct Quantized_Vertices
+{
 
-	Quantized_Vertices(float epsilon) : scale(2.0f / epsilon) {
+	Quantized_Vertices(float epsilon) : scale(2.0f / epsilon)
+	{
 	}
 
-	std::tuple<int32_t, int32_t, int32_t> quantize(Vec3 v) {
+	std::tuple<int32_t, int32_t, int32_t> quantize(Vec3 v)
+	{
 		int32_t x = static_cast<int32_t>(std::floor(scale * v.x));
 		int32_t y = static_cast<int32_t>(std::floor(scale * v.y));
 		int32_t z = static_cast<int32_t>(std::floor(scale * v.z));
 		return {x, y, z};
 	}
 
-	void insert(Vec3 v, uint32_t id) {
+	void insert(Vec3 v, uint32_t id)
+	{
 
 		// Very simple quantization; could probably improve precision by separating out the
 		// fractional part. However, accuracy is not particularly important here: we just want to
 		// be able to match vertices up to a small epsilon.
 
 		auto q = quantize(v);
-		if (vertices.find(q) != vertices.end()) {
+		if (vertices.find(q) != vertices.end())
+		{
 			inputs_unique = false;
 		}
 		vertices.insert({q, id});
 	}
 
-	std::optional<uint32_t> find(Vec3 v) {
+	std::optional<uint32_t> find(Vec3 v)
+	{
 
 		auto [x, y, z] = quantize(v);
-		for (int32_t dx = -1; dx <= 1; dx++) {
-			for (int32_t dy = -1; dy <= 1; dy++) {
-				for (int32_t dz = -1; dz <= 1; dz++) {
-					if (vertices.find({x + dx, y + dy, z + dz}) != vertices.end()) {
+		for (int32_t dx = -1; dx <= 1; dx++)
+		{
+			for (int32_t dy = -1; dy <= 1; dy++)
+			{
+				for (int32_t dz = -1; dz <= 1; dz++)
+				{
+					if (vertices.find({x + dx, y + dy, z + dz}) != vertices.end())
+					{
 						return vertices.at({x + dx, y + dy, z + dz});
 					}
 				}
@@ -439,15 +541,23 @@ struct Quantized_Vertices {
 		return std::nullopt;
 	}
 
-	bool all_unique() {
-		if (!inputs_unique) return false;
-		for (auto& [q, _] : vertices) {
+	bool all_unique()
+	{
+		if (!inputs_unique)
+			return false;
+		for (auto &[q, _] : vertices)
+		{
 			auto [x, y, z] = q;
-			for (int32_t dx = -1; dx <= 1; dx++) {
-				for (int32_t dy = -1; dy <= 1; dy++) {
-					for (int32_t dz = -1; dz <= 1; dz++) {
-						if (dx == 0 && dy == 0 && dz == 0) continue;
-						if (vertices.find({x + dx, y + dy, z + dz}) != vertices.end()) {
+			for (int32_t dx = -1; dx <= 1; dx++)
+			{
+				for (int32_t dy = -1; dy <= 1; dy++)
+				{
+					for (int32_t dz = -1; dz <= 1; dz++)
+					{
+						if (dx == 0 && dy == 0 && dz == 0)
+							continue;
+						if (vertices.find({x + dx, y + dy, z + dz}) != vertices.end())
+						{
 							return false;
 						}
 					}
@@ -462,9 +572,9 @@ struct Quantized_Vertices {
 	std::map<std::tuple<int32_t, int32_t, int32_t>, uint32_t> vertices;
 };
 
-
-std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_Mesh const &target, CheckExtra check_extra) {
-	//NOTE: check_extra actually ignored for now. Will update!
+std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_Mesh const &target, CheckExtra check_extra)
+{
+	// NOTE: check_extra actually ignored for now. Will update!
 
 	constexpr float epsilon = 0.001f;
 
@@ -474,12 +584,14 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 	using FaceCRef = Halfedge_Mesh::FaceCRef;
 
 	Quantized_Vertices source_verts(epsilon);
-	for (VertexCRef v = source.vertices.begin(); v != source.vertices.end(); v++) {
+	for (VertexCRef v = source.vertices.begin(); v != source.vertices.end(); v++)
+	{
 		source_verts.insert(v->position, v->id);
 	}
 
 	Quantized_Vertices target_verts(epsilon);
-	for (VertexCRef v = target.vertices.begin(); v != target.vertices.end(); v++) {
+	for (VertexCRef v = target.vertices.begin(); v != target.vertices.end(); v++)
+	{
 		target_verts.insert(v->position, v->id);
 	}
 
@@ -491,18 +603,26 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 	std::unordered_map<uint32_t, VertexCRef> v_source_to_target;
 	std::unordered_map<uint32_t, VertexCRef> v_target_to_source;
 
-	for (VertexCRef v = source.vertices.begin(); v != source.vertices.end(); v++) {
-		if (auto target_id = target_verts.find(v->position)) {
+	for (VertexCRef v = source.vertices.begin(); v != source.vertices.end(); v++)
+	{
+		if (auto target_id = target_verts.find(v->position))
+		{
 			v_target_to_source.insert({*target_id, v});
-		} else {
+		}
+		else
+		{
 			return "Source vertex set is not a subset of target vertex set!";
 		}
 	}
 
-	for (VertexCRef v = target.vertices.begin(); v != target.vertices.end(); v++) {
-		if (auto source_id = source_verts.find(v->position)) {
+	for (VertexCRef v = target.vertices.begin(); v != target.vertices.end(); v++)
+	{
+		if (auto source_id = source_verts.find(v->position))
+		{
 			v_source_to_target.insert({*source_id, v});
-		} else {
+		}
+		else
+		{
 			return "Target vertex set is not a subset of source vertex set!";
 		}
 	}
@@ -514,7 +634,8 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 	std::unordered_set<uint32_t> e_target_ids;
 	std::unordered_set<uint32_t> e_source_ids;
 
-	for (EdgeCRef e = source.edges.begin(); e != source.edges.end(); e++) {
+	for (EdgeCRef e = source.edges.begin(); e != source.edges.end(); e++)
+	{
 
 		uint32_t id0 = e->halfedge->vertex->id;
 		uint32_t id1 = e->halfedge->twin->vertex->id;
@@ -523,10 +644,13 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 
 		bool found = false;
 		HalfedgeCRef h = v0->halfedge;
-		do {
-			if (h->twin->vertex == v1) {
+		do
+		{
+			if (h->twin->vertex == v1)
+			{
 				auto match = h->edge;
-				if (e_target_ids.find(match->id) == e_target_ids.end()) {
+				if (e_target_ids.find(match->id) == e_target_ids.end())
+				{
 					found = true;
 					e_target_ids.insert(match->id);
 					break;
@@ -535,10 +659,12 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 			h = h->twin->next;
 		} while (h != v0->halfedge);
 
-		if (!found) return "Source edge set is not a subset of target edge set!";
+		if (!found)
+			return "Source edge set is not a subset of target edge set!";
 	}
 
-	for (EdgeCRef e = target.edges.begin(); e != target.edges.end(); e++) {
+	for (EdgeCRef e = target.edges.begin(); e != target.edges.end(); e++)
+	{
 
 		uint32_t id0 = e->halfedge->vertex->id;
 		uint32_t id1 = e->halfedge->twin->vertex->id;
@@ -547,10 +673,13 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 
 		bool found = false;
 		HalfedgeCRef h = v0->halfedge;
-		do {
-			if (h->twin->vertex == v1) {
+		do
+		{
+			if (h->twin->vertex == v1)
+			{
 				auto match = h->edge;
-				if (e_source_ids.find(match->id) == e_source_ids.end()) {
+				if (e_source_ids.find(match->id) == e_source_ids.end())
+				{
 					found = true;
 					e_source_ids.insert(match->id);
 					break;
@@ -559,7 +688,8 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 			h = h->twin->next;
 		} while (h != v0->halfedge);
 
-		if (!found) return "Target edge set is not a subset of source edge set!";
+		if (!found)
+			return "Target edge set is not a subset of source edge set!";
 	}
 
 	assert(e_source_ids.size() == source.edges.size());
@@ -573,12 +703,14 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 	std::unordered_set<uint32_t> f_target_ids;
 	std::unordered_set<uint32_t> f_source_ids;
 
-	for (FaceCRef f = source.faces.begin(); f != source.faces.end(); f++) {
+	for (FaceCRef f = source.faces.begin(); f != source.faces.end(); f++)
+	{
 
 		std::unordered_multiset<VertexCRef> verts;
 		{
 			HalfedgeCRef h = f->halfedge;
-			do {
+			do
+			{
 				verts.insert(v_source_to_target.at(h->vertex->id));
 				h = h->next;
 			} while (h != f->halfedge);
@@ -587,19 +719,23 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 		bool found = false;
 		HalfedgeCRef begin = (*verts.begin())->halfedge;
 		HalfedgeCRef h = begin;
-		do {
+		do
+		{
 			FaceCRef match = h->face;
 
 			std::unordered_multiset<VertexCRef> remaining_verts = verts;
 			HalfedgeCRef h_match = match->halfedge;
-			do {
+			do
+			{
 				auto v = remaining_verts.find(h_match->vertex);
-				if (v != remaining_verts.end()) remaining_verts.erase(v);
+				if (v != remaining_verts.end())
+					remaining_verts.erase(v);
 				h_match = h_match->next;
 			} while (h_match != match->halfedge);
 
 			if (remaining_verts.empty() && f_target_ids.find(match->id) == f_target_ids.end() &&
-			    match->boundary == f->boundary) {
+				match->boundary == f->boundary)
+			{
 				found = true;
 				f_target_ids.insert(match->id);
 				break;
@@ -608,15 +744,18 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 			h = h->twin->next;
 		} while (h != begin);
 
-		if (!found) return "Source face set is not a subset of target face set!";
+		if (!found)
+			return "Source face set is not a subset of target face set!";
 	}
 
-	for (FaceCRef f = target.faces.begin(); f != target.faces.end(); f++) {
+	for (FaceCRef f = target.faces.begin(); f != target.faces.end(); f++)
+	{
 
 		std::unordered_multiset<VertexCRef> verts;
 		{
 			HalfedgeCRef h = f->halfedge;
-			do {
+			do
+			{
 				verts.insert(v_target_to_source.at(h->vertex->id));
 				h = h->next;
 			} while (h != f->halfedge);
@@ -625,19 +764,23 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 		bool found = false;
 		HalfedgeCRef begin = (*verts.begin())->halfedge;
 		HalfedgeCRef h = begin;
-		do {
+		do
+		{
 			FaceCRef match = h->face;
 
 			std::unordered_multiset<VertexCRef> remaining_verts = verts;
 			HalfedgeCRef h_match = match->halfedge;
-			do {
+			do
+			{
 				auto v = remaining_verts.find(h_match->vertex);
-				if (v != remaining_verts.end()) remaining_verts.erase(v);
+				if (v != remaining_verts.end())
+					remaining_verts.erase(v);
 				h_match = h_match->next;
 			} while (h_match != match->halfedge);
 
 			if (remaining_verts.empty() && f_source_ids.find(match->id) == f_source_ids.end() &&
-			    match->boundary == f->boundary) {
+				match->boundary == f->boundary)
+			{
 				found = true;
 				f_source_ids.insert(match->id);
 				break;
@@ -646,7 +789,8 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 			h = h->twin->next;
 		} while (h != begin);
 
-		if (!found) return "Target face set is not a subset of source face set!";
+		if (!found)
+			return "Target face set is not a subset of source face set!";
 	}
 
 	assert(f_source_ids.size() == source.faces.size());
@@ -656,19 +800,24 @@ std::optional<std::string> Test::differs(Halfedge_Mesh const &source, Halfedge_M
 	return std::nullopt;
 }
 
-void Test::print_matrix(Mat4 matrix) {
+void Test::print_matrix(Mat4 matrix)
+{
 	std::stringstream ss;
 	ss << "Mat4{";
-	for (int i = 0; i < 4; i++) {
+	for (int i = 0; i < 4; i++)
+	{
 		ss << "Vec4{";
-		for (int j = 0; j < 4; j++) {
+		for (int j = 0; j < 4; j++)
+		{
 			ss << std::to_string(matrix[i][j]) << "f";
-			if (j != 3) {
+			if (j != 3)
+			{
 				ss << ", ";
 			}
 		}
 		ss << "}";
-		if (i != 3) {
+		if (i != 3)
+		{
 			ss << ", ";
 		}
 	}
@@ -676,15 +825,18 @@ void Test::print_matrix(Mat4 matrix) {
 	info("%s", ss.str().c_str());
 }
 
-void Test::print_vec3s(const std::vector<Vec3>& vec) {
+void Test::print_vec3s(const std::vector<Vec3> &vec)
+{
 	std::stringstream ss;
 	ss << "std::vector{";
-	for (size_t i = 0; i < vec.size(); i++) {
+	for (size_t i = 0; i < vec.size(); i++)
+	{
 		ss << "Vec3{";
 		ss << std::to_string(vec[i].x) << "f, ";
 		ss << std::to_string(vec[i].y) << "f, ";
 		ss << std::to_string(vec[i].z) << "f}";
-		if (i != vec.size() - 1) {
+		if (i != vec.size() - 1)
+		{
 			ss << ", ";
 		}
 	}
@@ -692,12 +844,15 @@ void Test::print_vec3s(const std::vector<Vec3>& vec) {
 	info("%s", ss.str().c_str());
 }
 
-void Test::print_floats(const std::vector<float>& vec) {
+void Test::print_floats(const std::vector<float> &vec)
+{
 	std::stringstream ss;
 	ss << "std::vector{";
-	for (size_t i = 0; i < vec.size(); i++) {
+	for (size_t i = 0; i < vec.size(); i++)
+	{
 		ss << std::to_string(vec[i]) << "f";
-		if (i != vec.size() - 1) {
+		if (i != vec.size() - 1)
+		{
 			ss << ", ";
 		}
 	}
@@ -705,15 +860,18 @@ void Test::print_floats(const std::vector<float>& vec) {
 	info("%s", ss.str().c_str());
 }
 
-void Test::print_spectrums(const std::vector<Spectrum>& vec) {
+void Test::print_spectrums(const std::vector<Spectrum> &vec)
+{
 	std::stringstream ss;
 	ss << "std::vector{";
-	for (size_t i = 0; i < vec.size(); i++) {
+	for (size_t i = 0; i < vec.size(); i++)
+	{
 		ss << "Spectrum{";
 		ss << std::to_string(vec[i].r) << "f, ";
 		ss << std::to_string(vec[i].g) << "f, ";
 		ss << std::to_string(vec[i].b) << "f}";
-		if (i != vec.size() - 1) {
+		if (i != vec.size() - 1)
+		{
 			ss << ", ";
 		}
 	}
@@ -721,9 +879,11 @@ void Test::print_spectrums(const std::vector<Spectrum>& vec) {
 	info("%s", ss.str().c_str());
 }
 
-bool Test::distant_from(const Halfedge_Mesh& from, const Halfedge_Mesh& to, float scale) {
+bool Test::distant_from(const Halfedge_Mesh &from, const Halfedge_Mesh &to, float scale)
+{
 
-	for (auto v = to.vertices.begin(); v != to.vertices.end(); ++v) {
+	for (auto v = to.vertices.begin(); v != to.vertices.end(); ++v)
+	{
 
 		// This is highly approximate: we simply scale up the threshold by the mean edge length
 		// incident from this vertex. This should make the distance test roughly scale-independent,
@@ -732,14 +892,16 @@ bool Test::distant_from(const Halfedge_Mesh& from, const Halfedge_Mesh& to, floa
 		uint32_t n = 0;
 		float avg_edge = 0.0f;
 		auto h = v->halfedge;
-		do {
+		do
+		{
 			n++;
 			avg_edge += (h->twin->vertex->position - v->position).norm();
 			h = h->twin->next;
 		} while (h != v->halfedge);
 		avg_edge /= static_cast<float>(n);
 
-		if (closest_distance(from, v->position) > avg_edge * scale * 0.1f) {
+		if (closest_distance(from, v->position) > avg_edge * scale * 0.1f)
+		{
 			return true;
 		}
 	}
@@ -747,12 +909,15 @@ bool Test::distant_from(const Halfedge_Mesh& from, const Halfedge_Mesh& to, floa
 	return false;
 }
 
-float Test::closest_distance(const Halfedge_Mesh& from, const Vec3& to) {
+float Test::closest_distance(const Halfedge_Mesh &from, const Vec3 &to)
+{
 	float d = std::numeric_limits<float>::infinity();
 
 	// https://iquilezles.org/articles/triangledistance/
-	auto length2 = [](Vec3 v) { return dot(v, v); };
-	auto distance_to_triangle = [length2](Vec3 p, Vec3 v1, Vec3 v2, Vec3 v3) {
+	auto length2 = [](Vec3 v)
+	{ return dot(v, v); };
+	auto distance_to_triangle = [length2](Vec3 p, Vec3 v1, Vec3 v2, Vec3 v3)
+	{
 		Vec3 v21 = v2 - v1;
 		Vec3 p1 = p - v1;
 		Vec3 v32 = v3 - v2;
@@ -762,20 +927,23 @@ float Test::closest_distance(const Halfedge_Mesh& from, const Vec3& to) {
 		Vec3 nor = cross(v21, v13);
 		return std::sqrt(
 			(sign(dot(cross(v21, nor), p1)) + sign(dot(cross(v32, nor), p2)) +
-		         sign(dot(cross(v13, nor), p3)) <
-		     2.0f)
+				 sign(dot(cross(v13, nor), p3)) <
+			 2.0f)
 				? std::min(std::min(length2(v21 * std::clamp(dot(v21, p1) / length2(v21), 0.0f, 1.0f) - p1),
-		                            length2(v32 * std::clamp(dot(v32, p2) / length2(v32), 0.0f, 1.0f) - p2)),
-		                   length2(v13 * std::clamp(dot(v13, p3) / length2(v13), 0.0f, 1.0f) - p3))
+									length2(v32 * std::clamp(dot(v32, p2) / length2(v32), 0.0f, 1.0f) - p2)),
+						   length2(v13 * std::clamp(dot(v13, p3) / length2(v13), 0.0f, 1.0f) - p3))
 				: dot(nor, p1) * dot(nor, p1) / length2(nor));
 	};
 
-	for (Halfedge_Mesh::FaceCRef face = from.faces.begin(); face != from.faces.end(); ++face) {
-		if (face->boundary) continue;
+	for (Halfedge_Mesh::FaceCRef face = from.faces.begin(); face != from.faces.end(); ++face)
+	{
+		if (face->boundary)
+			continue;
 		Halfedge_Mesh::HalfedgeCRef h = face->halfedge;
 		Vec3 v1 = h->vertex->position;
 		h = h->next;
-		do {
+		do
+		{
 			Vec3 v2 = h->vertex->position;
 			h = h->next;
 			Vec3 v3 = h->vertex->position;
