@@ -32,6 +32,11 @@ bool Particles::Particle::update(const PT::Aggregate &scene, Vec3 const &gravity
 				position += velocity * collision_t;
 				velocity = velocity - 2 * dot(normal, velocity) * normal;
 			}
+			else if (collision_t <= 0)
+			{
+				velocity = velocity - 2 * dot(normal, velocity) * normal;
+				collision_t = 0;
+			}
 			else
 				break;
 		}

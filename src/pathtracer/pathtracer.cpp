@@ -59,7 +59,7 @@ namespace PT
 
 		// For task 6, we want to upgrade our direct light sampling procedure to also
 		// sample area lights using mixture sampling.
-		Spectrum radiance = sum_delta_lights(hit);
+		Spectrum radiance = {};
 		if (hit.bsdf.is_specular())
 		{
 			return sample_direct_lighting_task4(rng, hit);
